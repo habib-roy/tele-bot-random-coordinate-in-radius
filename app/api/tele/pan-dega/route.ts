@@ -19,6 +19,29 @@ const sendLocation = async (chatId: number, lat: string | number, lng: string | 
   });
 };
 
+// Fungsi untuk notifikasi ke owner tentang pesan masuk
+const notifyOwner = async (from: any, text: string) => {
+  const ownerChatId = process.env.OWNER_CHAT_ID;
+
+  if (!ownerChatId) {
+    console.warn("OWNER_CHAT_ID not set, skipping notification");
+    return;
+  }
+
+  const username = from.username ? `@${from.username}` : "No username";
+  const firstName = from.first_name || "";
+  const lastName = from.last_name || "";
+  const userId = from.id;
+
+  const notification = `🔔 Pesan Baru Masuk!\n\n` +
+    `👤 Dari: ${firstName} ${lastName}\n` +
+    `🆔 User ID: ${userId}\n` +
+    `📱 Username: ${username}\n` +
+    `💬 Pesan: ${text}`;
+
+  await sendMessage(parseInt(ownerChatId), notification);
+};
+
 const getRandomCoordinateInRadius = (
   centerLat: number,
   centerLng: number,
@@ -76,6 +99,9 @@ export const POST = async (req: NextRequest) => {
   const text: string = message.text || "";
 
   console.log("📩 Incoming message:", text);
+
+  // Notifikasi ke owner tentang pesan masuk
+  await notifyOwner(message.from, text);
 
   // --- Tangani command /ambil saja ---
   if (text.startsWith("/ambil")) {
