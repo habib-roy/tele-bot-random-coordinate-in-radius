@@ -11,6 +11,14 @@ const sendMessage = async (chatId: number, text: string) => {
   });
 };
 
+const sendLocation = async (chatId: number, lat: string | number, lng: string | number) => {
+  await fetch(`${TELEGRAM_API}/sendLocation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, latitude: lat, longitude: lng }),
+  });
+};
+
 const getRandomCoordinateInRadius = (
   centerLat: number,
   centerLng: number,
@@ -84,6 +92,12 @@ export const POST = async (req: NextRequest) => {
 
     // Kirim longitude
     await sendMessage(chatId, lng);
+
+    // Kirim preview lokasi dengan URL
+    await sendMessage(chatId, `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+
+    // Kirim lokasi (preview peta)
+    await sendLocation(chatId, lat, lng);
 
   } else {
     // Jika bukan /ambil, abaikan atau beri respon default
